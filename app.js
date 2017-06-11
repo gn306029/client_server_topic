@@ -1,6 +1,6 @@
 "use strict";
 const linebot = require('./index.js');
-const movie = require('../movie.js');
+const movie = require('./movie.js');
 const lt = require('./line_template.js');
 const parser = require('./parser.js');
 const sql = require('./sql.js');
