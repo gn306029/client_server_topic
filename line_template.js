@@ -1,4 +1,4 @@
-function get_buttons(video_id,video_name,callback){
+function get_buttons(video_name,callback){
     var json = {
           "type": "template",
           "altText": "this is a buttons template",
@@ -9,9 +9,19 @@ function get_buttons(video_id,video_name,callback){
               "text": "請選擇",
               "actions": [
                   {
-                    "type": "uri",
-                    "label": "更多資訊",
-                    "uri": "http://fs.mis.kuas.edu.tw/~s1104137126/IMDB/php/Page_Video.php?VIDEO_ID="+video_id
+                    "type": "message",
+                    "label": "電影簡介",
+                    "text": "電影簡介"
+                  },
+                  {
+                    "type": "message",
+                    "label": "電影卡司",
+                    "text": "電影卡司"
+                  },
+                  {
+                    "type": "message",
+                    "label": "其他資訊",
+                    "text": "其他資訊"
                   },
                   {
                     "type": "message",
@@ -24,29 +34,18 @@ function get_buttons(video_id,video_name,callback){
     callback && callback(json);
 }
 
-/*set_therate_name(['台中新光影城',
-  //'台中老虎城威秀',
-  '日新大戲院',
-  //'親親戲院',
-  //'豐源國際影城',
-  '台中大遠百威秀影城',
-  //'華威台中影城',
-  '台中凱擘影城',
-  //'台中站前秀泰影城',
-  '時代數位3D影城'],function(data){
-  var columns = "{\"type\":\"template\",\"altText\":\"thearte\",\"template\":{\"type\":\"carousel\",\"columns\":"+data+"}}";
-  console.log((columns));
-});*/
-
 function set_Carousel(array_name,title,text,photo_url,callback){
-  var columns = "";
-  columns ="[{\"thumbnailImageUrl\":\""+photo_url+"\",\"title\":\""+title+"\",\"text\":\""+text+"\",\"actions\":[";
+  var columns = "{\"type\":\"template\",\"altText\":\"thearte\",\"template\":{\"type\":\"carousel\",\"columns\":";
+  columns +="[{\"thumbnailImageUrl\":\""+photo_url+"\",\"title\":\""+title+"\",\"text\":\""+text+"\",\"actions\":[";
   var group = 0;
   var index = 0;
   if(array_name.length%3 == 0){
     group = parseInt(array_name.length/3);
   }else{
     group = parseInt(array_name.length/3)+1;
+  }
+  if(group > 5){
+    group = 5;
   }
   for(var all_row =0;all_row < group ; all_row++){
     for(var i =0;i<3;i++){
@@ -66,7 +65,7 @@ function set_Carousel(array_name,title,text,photo_url,callback){
         index ++;
     }
   }
-  callback && callback(columns);
+  callback && callback(columns+"}}");
 }
 
 function set_Carousel_URL(array_name,uri_array,title,text,photo_url,callback){
