@@ -6,9 +6,9 @@ const sql = require('./sql.js');
 const domain = require('domain');
 
 const bot = linebot({
-	channelId: '1489562053',
-	channelSecret: '3de8327d6b424f48fd9749d0282f948a',
-	channelAccessToken: 'DcO0yomJRiCDhvUKCMnkAbsr4j8QzH2QgwV+hQ+gE1VrR62UfymbT5XvapKkjyRfRPml59E31bvskT3bd87HHRZhEyZ+VQqO7QnsPcgm1pcMffFtVMHM2xPRGEi9aRytnwHddP+dze1iSiS+UtoGegdB04t89/1O/w1cDnyilFU=',
+	channelId: 'XXX',
+	channelSecret: 'XXX',
+	channelAccessToken: 'XXX',
 	verify: true // default=true
 });
 
