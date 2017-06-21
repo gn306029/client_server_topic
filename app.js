@@ -1,3 +1,13 @@
+/*
+
+搜尋某些影城或影片可能會沒有回應你
+那這可能是因為那個關鍵字搜尋不到任何結果
+至於這問題我也無法，因為我是透過他的網站去爬資料的
+使用該網站搜尋出來的結果再去搜尋一次是不一定會找到結果的
+
+*/
+
+
 "use strict";
 const linebot = require('./index.js');
 const lt = require('./line_template.js');
@@ -6,18 +16,11 @@ const sql = require('./sql.js');
 const domain = require('domain');
 
 const bot = linebot({
-	channelId: 'XXX',
-	channelSecret: 'XXX',
-	channelAccessToken: 'XXX',
+	channelId: '1489562053',
+ 	channelSecret: '3de8327d6b424f48fd9749d0282f948a',
+ 	channelAccessToken: 'DcO0yomJRiCDhvUKCMnkAbsr4j8QzH2QgwV+hQ+gE1VrR62UfymbT5XvapKkjyRfRPml59E31bvskT3bd87HHRZhEyZ+VQqO7QnsPcgm1pcMffFtVMHM2xPRGEi9aRytnwHddP+dze1iSiS+UtoGegdB04t89/1O/w1cDnyilFU=',
 	verify: true // default=true
 });
-
-//判斷按下四顆按鈕中的哪一顆
-var status = 0;
-//判斷按下各個按鈕之後會觸發的動作
-var status_action = 0;
-var movie_name = "";
-var therate_result = [];
 
 var d = domain.create();
 
@@ -35,12 +38,12 @@ bot.on('message', function (event) {
 							event.reply("輸入想查詢的電影");
 						});
 					}else if(event.message.text == "新片上映"){
-						sql.set_user_status(event.source.userId,"1",function(data){
+						sql.set_user_status(event.source.userId,"0.1",function(data){
 							parser.week_movie_list(function(data){
 								lt.set_Carousel(data,"本周新片","選擇電影","https://fs.mis.kuas.edu.tw/~s1104137126/LINE/now_video.jpg",function(result){
 									event.reply(JSON.parse(result));
-								})
-							})
+								});
+							});
 						});
 					}else if(event.message.text == "本期新片"){
 						sql.set_user_status(event.source.userId,"2",function(data){
@@ -48,24 +51,23 @@ bot.on('message', function (event) {
 							lt.set_Carousel(interval,"分數區間","電影希望在幾分之間呢？","https://fs.mis.kuas.edu.tw/~s1104137126/LINE/score.jpg",function(result){
 								event.reply(JSON.parse(result));
 								
-							})
+							});
 						});
 					}else if(event.message.text == "本期二輪"){
 						sql.set_user_status(event.source.userId,"3",function(data){
 							var interval = ["2-4 分","5-6 分","6-7 分","7-8 分","8-9 分","9-10 分"];
 							lt.set_Carousel(interval,"分數區間","電影希望在幾分之間呢？","https://fs.mis.kuas.edu.tw/~s1104137126/LINE/score.jpg",function(result){
 								event.reply(JSON.parse(result));
-								
-							})
+							});
 						});
 					}else if(event.message.text == "近期上映"){
 						sql.set_user_status(event.source.userId,"4",function(){
 							parser.last_in_theaters("get_date",function(date){
 								lt.set_Carousel(date,"日期","選擇日期","https://fs.mis.kuas.edu.tw/~s1104137126/LINE/now_video.jpg",function(result){
 									event.reply(JSON.parse(result));
-								})
-							})
-						})
+								});
+							});
+						});
 					}else if(event.message.text == "劇院"){
 						let therate_name = ["台北地區","桃園地區","新竹地區","苗栗地區","台中地區","彰化地區","雲林地區","嘉義地區","台南地區","高雄地區","屏東地區","基隆地區","宜蘭地區","南投地區","東部、離島地區"];
 						lt.set_Carousel(therate_name,"地區","選擇地區","https://fs.mis.kuas.edu.tw/~s1104137126/LINE/condition.jpg",function(result){
@@ -74,7 +76,7 @@ bot.on('message', function (event) {
 							});
 						});
 					}else if(user_status[0] == "0.1"){
-						if(event.message.text != "undefined"){
+						if(event.message.text != "X"){
 							parser.GetSearch(event.message.text,"電影",function(id,name){
 								// 通常第一筆相關度最高 所以取第一筆
 								sql.sql_query("Update `line_user` Set `movie_name` = '"+event.message.text+"' Where `user_mid` = '"+event.source.userId+"'");
@@ -84,9 +86,11 @@ bot.on('message', function (event) {
 									});
 								});
 							});
+						}else{
+							event.reply("XX不能按喔 啾咪")
 						}
 					}else if(user_status[0] == "1"){
-						if(event.message.text != "undefined"){
+						if(event.message.text != "X"){
 							parser.GetSearch(event.message.text,"電影",function(id,name){
 								console.log(name.length);
 								if(name.length <= 15 && name.length >= 2){
@@ -107,6 +111,8 @@ bot.on('message', function (event) {
 											event.reply(json);
 										});
 									});
+								}else if(name.length == 0){
+									event.reply("沒有找到結果，再輸入其他關鍵字試試看");
 								}else{
 									let r = "搜尋到的電影有：\r\n";
 									for(let i in name){
@@ -116,7 +122,7 @@ bot.on('message', function (event) {
 								}
 							})
 						}else{
-							event.reply("幹你媽的 按三小undefind");
+							event.reply("XX按了沒有用喔 啾咪");
 						}
 					}else if(user_status[0] == "1.1" && event.message.text == "上映影城"){
 						sql.set_user_status(event.source.userId,"1.2",function(data){
@@ -165,7 +171,7 @@ bot.on('message', function (event) {
 									 * 這裡的資料是有上映該部電影的戲院
 									 *
 									 */
-									therate_result = result;
+									let therate_result = result;
 									var Replytext = [];
 									for(var i = 1;i<result.length;i++){
 										var distince = false;
@@ -193,87 +199,95 @@ bot.on('message', function (event) {
 								}
 							});
 					}else if(user_status[0] == "1.3"){
-						parser.do_find_theater_detail(user_status[1],user_status[2],function(result){
-							sql.sql_query("UPDATE `line_user` SET `therate`='"+event.message.text+"' WHERE `user_mid` = '"+event.source.userId+"'");
-							var room = [];
-							var stat = false;
-							/*
-							 * 整理該影城的該部電影的影廳資訊
-							 *
-							 */
-							for(var i = 1;i<result.length;i++){
-								if(result[i][0] == event.message.text){
-									/*
-									 - 如果不是兩個數字開頭的話就代表是影廳資訊
-									 * 那如果是數字開頭的就代表該影廳是一般廳
-									 * 所以會增加一個一般的選項
-									 *
-									 */
-									var Reg = /^[0-9][0-9]/;
-									if(!Reg.test(result[i][1])){
-										if(!Reg.test(result[i][2])){
-											room.push(result[i][1].trim() + " " + result[i][2].trim());
-										}else{
-											room.push(result[i][1].trim());
-										}
-									}else if(!stat){
+						if(event.message.text != "X"){
+							parser.do_find_theater_detail(user_status[1],user_status[2],function(result){
+								sql.sql_query("UPDATE `line_user` SET `therate`='"+event.message.text+"' WHERE `user_mid` = '"+event.source.userId+"'");
+								var room = [];
+								var stat = false;
+								/*
+								 * 整理該影城的該部電影的影廳資訊
+								 *
+								 */
+								for(var i = 1;i<result.length;i++){
+									if(result[i][0] == event.message.text){
 										/*
-										 * 一般只需要一個，之後再找到一般的就不會再新增到選項中
+										 - 如果不是兩個數字開頭的話就代表是影廳資訊
+										 * 那如果是數字開頭的就代表該影廳是一般廳
+										 * 所以會增加一個一般的選項
 										 *
 										 */
-										room.push("一般");
-										stat = true;
+										var Reg = /^[0-9][0-9]/;
+										if(!Reg.test(result[i][1])){
+											if(!Reg.test(result[i][2])){
+												room.push(result[i][1].trim() + " " + result[i][2].trim());
+											}else{
+												room.push(result[i][1].trim());
+											}
+										}else if(!stat){
+											/*
+											 * 一般只需要一個，之後再找到一般的就不會再新增到選項中
+											 *
+											 */
+											room.push("一般");
+											stat = true;
+										}
 									}
 								}
-							}
-							lt.set_Carousel(room,"廳","選擇影廳","https://fs.mis.kuas.edu.tw/~s1104137126/LINE/condition.jpg",function(data){
-								sql.set_user_status(event.source.userId,"1.4",function(){
-									event.reply(JSON.parse(data));
+								lt.set_Carousel(room,"廳","選擇影廳","https://fs.mis.kuas.edu.tw/~s1104137126/LINE/condition.jpg",function(data){
+									sql.set_user_status(event.source.userId,"1.4",function(){
+										event.reply(JSON.parse(data));
+									});
 								});
-							})
-						});
+							});
+						}else{
+							event.reply("XX不可以按喔 啾咪~");
+						}
 					}else if(user_status[0] == "1.4"){
 						/*
 						 * 選擇白天或晚上的場次
 						 *
 						 */
-						var json = {
-						  "type": "template",
-						  "altText": "this is a buttons template",
-						  "template": {
-						      "type": "buttons",
-						      "thumbnailImageUrl": "https://fs.mis.kuas.edu.tw/~s1104137126/LINE/now_video.jpg",
-						      "title": "想查詢的東西",
-						      "text": "請選擇",
-						      "actions": [
-				                  {
-				                    "type": "message",
-				                    "label": "查詢白天可訂票的場次",
-				                    "text": "白天訂票"
-				                  },
-				                  {
-				                    "type": "message",
-				                    "label": "查詢白天所有場次",
-				                    "text": "白天場次"
-				                  },
-				                  {
-				                    "type": "message",
-				                    "label": "查詢晚上可訂票的場次",
-				                    "text": "晚上訂票"
-				                  },
-				                  {
-				                    "type": "message",
-				                    "label": "查詢晚上所有場次",
-				                    "text": "晚上場次"
-				                  }
-				              ]
-						  }
-						};
-						sql.sql_query("UPDATE `line_user` SET `want_room`='"+event.message.text+"' WHERE `user_mid` = '"+event.source.userId+"'",function(){
-							sql.set_user_status(event.source.userId,"1.5",function(d2){
-	            				event.reply(json);
-	            			});
-						});
+						 if(event.message.text != "X"){
+							var json = {
+							"type": "template",
+							"altText": "this is a buttons template",
+							"template": {
+									"type": "buttons",
+									"thumbnailImageUrl": "https://fs.mis.kuas.edu.tw/~s1104137126/LINE/now_video.jpg",
+									"title": "想查詢的東西",
+									"text": "請選擇",
+									"actions": [
+										{
+										"type": "message",
+										"label": "查詢白天可訂票的場次",
+										"text": "白天訂票"
+										},
+										{
+										"type": "message",
+										"label": "查詢白天所有場次",
+										"text": "白天場次"
+										},
+										{
+										"type": "message",
+										"label": "查詢晚上可訂票的場次",
+										"text": "晚上訂票"
+										},
+										{
+										"type": "message",
+										"label": "查詢晚上所有場次",
+										"text": "晚上場次"
+										}
+									]
+								}
+							};
+							sql.sql_query("UPDATE `line_user` SET `want_room`='"+event.message.text+"' WHERE `user_mid` = '"+event.source.userId+"'",function(){
+								sql.set_user_status(event.source.userId,"1.5",function(d2){
+		            				event.reply(json);
+		            			});
+							});
+						 }else{
+						 	event.reply("XX不可以按呦~啾咪");
+						 }
 					}else if(user_status[0] == "1.5"){
 						/*
 						 * 判斷是否選擇了一般廳  book [0] 是戲院名稱 , book [1] 是影廳資訊 , book [2] 有時是接 book [2] 的影廳資訊 , 若否則跟 book [3] 之後一樣是存放時刻表以及訂票的網址
@@ -336,7 +350,7 @@ bot.on('message', function (event) {
 													}
 												}
 											}else if(result[0]['want_room'] == "一般" && result[0]['therate'] == all[i][0] && Reg.test(all[i][1])){
-												replytext += all[i][0]+" 一般場次\r\n";
+												replytext += all[i][0]+" 一般\r\n";
 												for(let j = 1;j<all[i].length;j++){
 													let Reg = /^[0-9][0-9]/;
 													if(Reg.test(all[i][j]) && all[i][j].substring(0,2) <= 17 && all[i][j].substring(0,2) >= 6){
@@ -402,7 +416,7 @@ bot.on('message', function (event) {
 													}
 												}
 											}else if(result[0]['want_room'] == "一般" && result[0]['therate'] == all[i][0] && Reg.test(all[i][1])){
-												replytext += all[i][0]+" 一般場次\r\n";
+												replytext += all[i][0]+" 一般\r\n";
 												for(let j = 1;j<all[i].length;j++){
 													let Reg = /^[0-9][0-9]/;
 													if(Reg.test(all[i][j]) && ((all[i][j].substring(0,2) >= 18 && all[i][j].substring(0,2) <= 23) || (all[i][j].substring(0,2) >= 0 && all[i][j].substring(0,2) <= 5))){
@@ -411,38 +425,54 @@ bot.on('message', function (event) {
 												}
 											}
 										}
+										console.log(replytext+" "+(result[0]['therate']+" "+result[0]['want_room']+"\r\n"))
 										if(replytext.length > (result[0]['therate']+" "+result[0]['want_room']+"\r\n").length){
 											event.reply(replytext);
 										}else{
 											event.reply("該時段今天沒有場次喔");
 										}
 										break;
+									default:
+										event.reply("請選擇表單的選項喔");
+										break;
 								}
 							});
 						});
 					}else if(user_status[0] == "2"){
 						parser.last_movie_list(event.message.text,function(data){
-							lt.set_Carousel(data,"符合條件的電影","選擇電影","https://fs.mis.kuas.edu.tw/~s1104137126/LINE/condition.jpg",function(d){
-								sql.set_user_status(event.source.userId,"0.1",function(){
-									event.reply(JSON.parse(d));
+							if(data.length != 0){
+								lt.set_Carousel(data,"符合條件的電影","選擇電影","https://fs.mis.kuas.edu.tw/~s1104137126/LINE/condition.jpg",function(d){
+									sql.set_user_status(event.source.userId,"0.1",function(){
+										event.reply(JSON.parse(d));
+									});
 								});
-							});
+							}else{
+								event.reply("請選表單上正確的分數區間喔");
+							}
 						});
 					}else if(user_status[0] == "3"){
 						parser.last_second_movie_list(event.message.text,function(data){
-							lt.set_Carousel(data,"符合條件的電影","選擇電影","https://fs.mis.kuas.edu.tw/~s1104137126/LINE/condition.jpg",function(d){
-								sql.set_user_status(event.source.userId,"0.1",function(){
-									event.reply(JSON.parse(d));
+							if(data.length != 0){
+								lt.set_Carousel(data,"符合條件的電影","選擇電影","https://fs.mis.kuas.edu.tw/~s1104137126/LINE/condition.jpg",function(d){
+									sql.set_user_status(event.source.userId,"0.1",function(){
+										event.reply(JSON.parse(d));
+									});
 								});
-							});
+							}else{
+								event.reply("請選表單上正確的分數區間喔");
+							}
 						});
 					}else if(user_status[0] == "4"){
-						sql.set_user_status(event.source.userId,"0.1",function(){
-							parser.last_in_theaters(event.message.text,function(date){
-								lt.set_Carousel(date,"符合條件的電影","選擇電影","https://fs.mis.kuas.edu.tw/~s1104137126/LINE/now_video.jpg",function(d){
-									event.reply(JSON.parse(d));
+						parser.last_in_theaters(event.message.text,function(data){
+							if(data.length != 0){
+								sql.set_user_status(event.source.userId,"0.1",function(){
+									lt.set_Carousel(data,"符合條件的電影","選擇電影","https://fs.mis.kuas.edu.tw/~s1104137126/LINE/now_video.jpg",function(d){
+										event.reply(JSON.parse(d));
+									});
 								});
-							});
+							}else{
+								event.reply("請選表單上正確的日期格式喔");
+							}
 						});
 					}else if(user_status[0] == "5"){
 						if(event.message.text == "台北地區"){
@@ -452,42 +482,55 @@ bot.on('message', function (event) {
 							});
 						}else{
 							parser.do_get_therate(event.message.text,function(therate_name){
-								lt.set_Carousel(therate_name,"影城","選擇影城","https://fs.mis.kuas.edu.tw/~s1104137126/LINE/theater.jpg",function(result){
-									sql.set_user_status(event.source.userId,"5.1",function(){
-										event.reply(JSON.parse(result));
+								if(therate_name != "not found"){
+									lt.set_Carousel(therate_name,"影城","選擇影城","https://fs.mis.kuas.edu.tw/~s1104137126/LINE/theater.jpg",function(result){
+										sql.set_user_status(event.source.userId,"5.1",function(){
+											event.reply(JSON.parse(result));
+										});
 									});
-								});
+								}else{
+									event.reply("請選擇表單上的地區名稱");
+								}
 							});
 						}
 					}else if(user_status[0] == "5.1"){
 						if(event.message.text == "府中15"){
 							event.reply("最新時刻表以網站連結的官方資料為準。web.fuzhong15.ntpc.gov.tw");
 						}else{
-							parser.GetTherateMovie(event.message.text,function(therate_movie){
-								/*
-								 * 將重複的電影刪掉 , 因為一部影城的一部電影會有分好幾個廳
-								 *
-								 */
-								let movie_arr = [];
-								movie_arr.push(therate_movie[0]);
-								for(let i in therate_movie){
-									let check = false;
-									for(let j in movie_arr){
-										if(therate_movie[i] ==  movie_arr[j]){
-											check = true;
-											break;
+							//沒防呆
+							if(event.message.text != "X"){
+								parser.GetTherateMovie(event.message.text,function(therate_movie){
+									if(therate_movie.length != 0){
+										/*
+										 * 將重複的電影刪掉 , 因為一部影城的一部電影會有分好幾個廳
+										 *
+										 */
+										let movie_arr = [];
+										movie_arr.push(therate_movie[0]);
+										for(let i in therate_movie){
+											let check = false;
+											for(let j in movie_arr){
+												if(therate_movie[i] ==  movie_arr[j]){
+													check = true;
+													break;
+												}
+											}
+											if(!check){
+												movie_arr.push(therate_movie[i]);
+											}
 										}
+										lt.set_Carousel(movie_arr,"電影","選擇電影","https://fs.mis.kuas.edu.tw/~s1104137126/LINE/sperate_movie.jpg",function(data){
+											sql.set_user_status(event.source.userId,"5.2",function(){
+												event.reply(JSON.parse(data));
+											});
+										});
+									}else{
+										event.reply("該地區沒有這個戲院喔");
 									}
-									if(!check){
-										movie_arr.push(therate_movie[i]);
-									}
-								}
-								lt.set_Carousel(movie_arr,"電影","選擇電影","https://fs.mis.kuas.edu.tw/~s1104137126/LINE/sperate_movie.jpg",function(data){
-									sql.set_user_status(event.source.userId,"5.2",function(){
-										event.reply(JSON.parse(data));
-									});
-								})
-							})
+								});
+							}else{
+								event.reply("XX按了沒用喔 啾咪");
+							}
 						}
 					}else if(user_status[0] == "5.2"){
 						/*
@@ -495,45 +538,50 @@ bot.on('message', function (event) {
 						 * 就不需要再選擇戲院了
 						 *
 						 */
-						 sql.sql_query("Update `line_user` Set `movie_name` = '"+event.message.text+"' Where `user_mid` = '"+event.source.userId+"'");
+						 
 						 parser.GetSearch(event.message.text,"電影",function(id,name){
-							sql.set_user_status(event.source.userId,"1.1",function(){
-								var json = {
-							          "type": "template",
-							          "altText": "this is a buttons template",
-							          "template": {
-							              "type": "buttons",
-							              "thumbnailImageUrl": "https://fs.mis.kuas.edu.tw/~s1104137126/LINE/sperate_movie.jpg",
-							              "title": name[0],
-							              "text": "請選擇",
-							              "actions": [
-							                  {
-							                    "type": "message",
-							                    "label": "電影簡介",
-							                    "text": "電影簡介"
-							                  },
-							                  {
-							                    "type": "message",
-							                    "label": "電影卡司",
-							                    "text": "電影卡司"
-							                  },
-							                  {
-							                    "type": "message",
-							                    "label": "其他資訊",
-							                    "text": "其他資訊"
-							                  },
-							                  {
-							                    "type": "message",
-							                    "label": "影廳",
-							                    "text": "影廳"
-							                  }
-							              ]
-							          }
-							    }
-							    sql.set_user_status(event.source.userId,"5.3",function(){
-									event.reply(json);
+						 	if(id.length > 0){
+						 		sql.sql_query("Update `line_user` Set `movie_name` = '"+event.message.text+"' Where `user_mid` = '"+event.source.userId+"'");
+								sql.set_user_status(event.source.userId,"1.1",function(){
+									var json = {
+								          "type": "template",
+								          "altText": "this is a buttons template",
+								          "template": {
+								              "type": "buttons",
+								              "thumbnailImageUrl": "https://fs.mis.kuas.edu.tw/~s1104137126/LINE/sperate_movie.jpg",
+								              "title": name[0],
+								              "text": "請選擇",
+								              "actions": [
+								                  {
+								                    "type": "message",
+								                    "label": "電影簡介",
+								                    "text": "電影簡介"
+								                  },
+								                  {
+								                    "type": "message",
+								                    "label": "電影卡司",
+								                    "text": "電影卡司"
+								                  },
+								                  {
+								                    "type": "message",
+								                    "label": "其他資訊",
+								                    "text": "其他資訊"
+								                  },
+								                  {
+								                    "type": "message",
+								                    "label": "影廳",
+								                    "text": "影廳"
+								                  }
+								              ]
+								          }
+								    };
+								    sql.set_user_status(event.source.userId,"5.3",function(){
+										event.reply(json);
+									});
 								});
-							});
+						 	}else{
+						 		event.reply("找不到該部電影，請改用其他關鍵字或直接選擇表單上有的電影");
+						 	}
 						 });
 					}else if(user_status[0] == "5.3" && event.message.text == "影廳"){
 						parser.do_find_theater_detail(user_status[1],user_status[2],function(result){
@@ -578,7 +626,7 @@ bot.on('message', function (event) {
 						});
 					}else if(user_status[0] == "0" && event.message.text != "查詢電影" && event.message.text != "新片上映" && event.message.text != "本期新片" && event.message.text != "本期二輪" && event.message.text != "劇院"){
 						event.reply("請先選擇動作喔，不然我不會理你");
-					}
+					};
 				});
 			break;
 		case 'image':

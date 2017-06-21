@@ -144,10 +144,10 @@ function last_in_theaters(date,callback){
                     $(this).children("li").each(function(){
                         result.push($(this).text().replace(/\t|\r\n|\n+/g, ""));
                     });
-                    callback && callback(result);
                 }
             });
         }
+        callback && callback(result);
     });
 }
 
@@ -209,7 +209,12 @@ function GetTherateID(therate_region,callback){
                 }
             });
         }
-        callback && callback(therate_id);
+        if(therate_id.length > 0){
+            callback && callback(therate_id);
+        }else{
+            callback && callback("not found");
+        }
+        
     });
 }
 
@@ -217,42 +222,45 @@ function GetTherateID(therate_region,callback){
 function GetTherateList(therate_id,callback){
     let therate_name = [];
     // 全台只有台北地區劇院超過15間 所以要特別處理
-    if(therate_id[0].charAt(0) == '/'){
-        for(let i in therate_id){
-            request(base_url+therate_id[i],function(error, response, body) {
-                let $ = cheerio.load(body);
-                $("#theaterList li a").each(function(){
-                    if($(this).text() != "網站" && $(this).text() != "(地圖)"){
-                        therate_name.push($(this).text().trim());
-                    }
+    if(typeof therate_id == "object"){
+        if(therate_id[0].charAt(0) == '/'){
+            for(let i in therate_id){
+                request(base_url+therate_id[i],function(error, response, body) {
+                    let $ = cheerio.load(body);
+                    $("#theaterList li a").each(function(){
+                        if($(this).text() != "網站" && $(this).text() != "(地圖)"){
+                            therate_name.push($(this).text().trim());
+                        }
+                    })
+                    callback && callback(therate_name);
                 })
-                callback && callback(therate_name);
-            })
+            }
+        }else{
+            for(let i = 1;i<therate_id.length;i++){
+                request(base_url+therate_id[i],function(error, response, body) {
+                    let $ = cheerio.load(body);
+                    let t = false;
+                    $("#theaterList li").each(function(){
+                        if($(this).attr("class") == "type0"){
+                            if($(this).text().replace(/▼/g,"").trim() == therate_id[0]){
+                                t = true;
+                            }else{
+                                t = false;
+                            }
+                        }
+                        if(t){
+                            if($(this).find('a').first().text().trim() != "網站" && $(this).find('a').first().text().trim() != "(地圖)" && $(this).find('a').first().text().trim() != ""){
+                                therate_name.push($(this).find('a').first().text().trim());
+                            }
+                        }
+                    });
+                    callback && callback(therate_name);
+                });
+            }
         }
     }else{
-        for(let i = 1;i<therate_id.length;i++){
-            request(base_url+therate_id[i],function(error, response, body) {
-                let $ = cheerio.load(body);
-                let t = false;
-                $("#theaterList li").each(function(){
-                    if($(this).attr("class") == "type0"){
-                        if($(this).text().replace(/▼/g,"").trim() == therate_id[0]){
-                            t = true;
-                        }else{
-                            t = false;
-                        }
-                    }
-                    if(t){
-                        if($(this).find('a').first().text().trim() != "網站" && $(this).find('a').first().text().trim() != "(地圖)" && $(this).find('a').first().text().trim() != ""){
-                            therate_name.push($(this).find('a').first().text().trim());
-                        }
-                    }
-                });
-                callback && callback(therate_name);
-            });
-        }
+        callback && callback("not found");
     }
-    
 }
 
 //取得電影資訊
@@ -289,8 +297,8 @@ function do_get_therate(therate_region,callback){
     GetTherateID(therate_region,function(id){
         GetTherateList(id,function(tn){
             callback && callback(tn);
-        })
-    })
+        });
+    });
 }
 
 function GetTherateMovie(therate_name,callback){
@@ -302,10 +310,10 @@ function GetTherateMovie(therate_name,callback){
             let $ = cheerio.load(body);
             $("#theaterShowtimeBlock .filmTitle").each(function(){
                 movie_name.push($(this).text().trim().replace(/\t/g));
-            })
+            });
             callback && callback(movie_name);
-        })
-    })
+        });
+    });
 }
 
 /*

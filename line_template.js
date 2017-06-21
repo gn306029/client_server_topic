@@ -49,17 +49,21 @@ function set_Carousel(array_name,title,text,photo_url,callback){
   }
   for(var all_row =0;all_row < group ; all_row++){
     for(var i =0;i<3;i++){
+        var a_n = array_name[index];
+        if((typeof a_n) == "undefined"){
+          a_n = "X";
+        }
         if(i < 2){
             if(all_row < group ){
-              columns += "{\"type\":\"message\",\"label\":\""+array_name[index]+"\",\"text\":\""+array_name[index]+"\"},";
+              columns += "{\"type\":\"message\",\"label\":\""+a_n+"\",\"text\":\""+a_n+"\"},";
             }else{
-              columns += "{\"type\":\"message\",\"label\":\""+array_name[index]+"\",\"text\":\""+array_name[index]+"\"}]}]";
+              columns += "{\"type\":\"message\",\"label\":\""+a_n+"\",\"text\":\""+a_n+"\"}]}]";
             }
         }else{
             if(all_row < group -1){
-               columns += "{\"type\":\"message\",\"label\":\""+array_name[index]+"\",\"text\":\""+array_name[index]+"\"}]},{\"thumbnailImageUrl\":\""+photo_url+"\",\"title\":\""+title+"\",\"text\":\""+text+"\",\"actions\":[";
+               columns += "{\"type\":\"message\",\"label\":\""+a_n+"\",\"text\":\""+a_n+"\"}]},{\"thumbnailImageUrl\":\""+photo_url+"\",\"title\":\""+title+"\",\"text\":\""+text+"\",\"actions\":[";
             }else{
-               columns += "{\"type\":\"message\",\"label\":\""+array_name[index]+"\",\"text\":\""+array_name[index]+"\"}]}]";
+               columns += "{\"type\":\"message\",\"label\":\""+a_n+"\",\"text\":\""+a_n+"\"}]}]";
             }
         }
         index ++;
